@@ -1,0 +1,25 @@
+{
+  "name": "unityid-codingchallenge",
+  "version": "1.0.0",
+  "description": "A randomness generator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/APantelides/unityid-cc.git"
+  },
+  "author": "Alexander Pantelides",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/APantelides/unityid-cc/issues"
+  },
+  "homepage": "https://github.com/APantelides/unityid-cc#readme",
+  "dependencies": {
+    "axios": "^0.15.3",
+    "big-integer": "^1.6.17",
+    "cryptico": "^1.0.2",
+    "xmlhttprequest": "^1.8.0"
+  }
+}
