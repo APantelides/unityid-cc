@@ -4,8 +4,20 @@ var bigInt = require('big-integer');
 
 class RSA {
   constructor () {
-    var randomNumHTPPrequest = (min, max) => { // Generate random number using random.com
-      var prime = axios.get('https://www.random.org/integers/', {
+
+    const cache = {};
+
+    var randomPrime1 = (min, max) => {  //generate pseudo random number using Math.random();
+      var p = Math.floor(Math.random() * ((max - 1) - min + 1)) + min;
+      if (bigInt(p).isPrime() === true) {
+        return p;
+      } else {
+        return randomPrime1(min, max);   
+      } 
+    };
+
+    var randomPrime2 = (min, max, key, callback) => { // Generate random number using random.com
+      axios.get('https://www.random.org/integers/', {
         params: {
           num: 1,
           min: min,
@@ -17,23 +29,30 @@ class RSA {
         }
       })
         .then((res) => {
-          return res.data;
+          var randomNumber = res.data;
+          if (bigInt(randomNumber).isPrime()) {
+            cache[key] = randomNumber;
+            callback();
+          } else {
+            randomPrime2(min, max, key, callback);
+          }
         })
         .catch((err) => {
           console.log(err);
           throw err;
         });
-      return prime;
     };
 
-    var randomPrime1 = (min, max) => {  //generate pseudo random number using Math.random();
-      var p = Math.floor(Math.random() * ((max - 1) - min + 1)) + min;
-      //var p = randomNumHTPPrequest(min, max); //still trying to get this to work!
-      if (bigInt(p).isPrime() === true) {
-        return p;
-      } else {
-        return randomPrime1(min, max);   
-      } 
+    var setPublicKeys = () => {
+      cache.t = (cache.p - 1) * (cache.q - 1);
+      this.publicKey1 = cache.p * cache.q; //public key1
+      randomPrime2(1, cache.t, 'publicKey2', setPrivateKey);
+    };
+
+    var setPrivateKey = () => {
+      this.publicKey2 = cache.publicKey2;
+      this.privateKey = modMult(this.publicKey2, cache.t);
+      console.log(this);
     };
 
     var modMult = (a, n) => {
@@ -64,12 +83,7 @@ class RSA {
       return t;
     };
 
-    var p = randomPrime1(1, 255);
-    var q = randomPrime1(1, 255);
-    var t = (p - 1) * (q - 1);
-    this.publicKey1 = p * q; //public key1
-    this.publicKey2 = randomPrime1(1, t); //public key2
-    this.privateKey = modMult(this.publicKey2, t); //private key
+    randomPrime2(1, 255, 'p', () => randomPrime2(1, 255, 'q', setPublicKeys));
   }
 
   encrypt(message, publicKey1, publicKey2) {
@@ -81,5 +95,6 @@ class RSA {
   }
 }
 
+
+
 var crypto = new RSA();
-console.log(crypto);
